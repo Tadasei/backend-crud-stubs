@@ -1,0 +1,42 @@
+{
+    "name": "tadasei/backend-crud-stubs",
+    "description": "A package that provides stubs for crud backend using inertia, blade and api stacks",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tadasei",
+            "email": "chemselhak.mahouche@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "require-dev": {
+		"symfony/var-dumper": "^6.0",
+		"phpunit/phpunit": "^10.0"
+	},
+    "autoload": {
+        "psr-4": {
+            "Tadasei\\BackendCrudStubs\\": "src/"
+        }
+    },
+    "autoload-dev": {
+		"psr-4": {
+			"Tadasei\\BackendCrudStubs\\Tests\\": "tests"
+		}
+	},
+	"scripts": {
+		"test": "vendor/bin/phpunit",
+		"test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+	},
+	"config": {
+		"sort-packages": true
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Tadasei\\BackendCrudStubs\\ServiceProvider"
+			]
+		}
+	}
+}
