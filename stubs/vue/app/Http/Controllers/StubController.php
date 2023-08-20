@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Stub\DeleteStubRequest;
 use App\Http\Requests\Stub\StoreStubRequest;
 use App\Http\Requests\Stub\UpdateStubRequest;
+use App\Models\Stub;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Stub;
 use Throwable;
 
 class StubController extends Controller
@@ -22,7 +22,7 @@ class StubController extends Controller
 	{
 		$this->authorize("viewAny", Stub::class);
 
-		return Inertia::render("Index", [
+		return Inertia::render("Stub/Index", [
 			"stubs" => Stub::all(),
 			"status" => session("status"),
 		]);
@@ -35,7 +35,7 @@ class StubController extends Controller
 	{
 		$this->authorize("create", Stub::class);
 
-		return Inertia::render("Create", [
+		return Inertia::render("Stub/Create", [
 			"status" => session("status"),
 		]);
 	}
@@ -75,7 +75,7 @@ class StubController extends Controller
 	{
 		$this->authorize("view", $stub);
 
-		return Inertia::render("Show", [
+		return Inertia::render("Stub/Show", [
 			"stub" => $stub,
 			"status" => session("status"),
 		]);
@@ -88,7 +88,7 @@ class StubController extends Controller
 	{
 		$this->authorize("edit", $stub);
 
-		return Inertia::render("Edit", [
+		return Inertia::render("Stub/Edit", [
 			"stub" => $stub,
 			"status" => session("status"),
 		]);

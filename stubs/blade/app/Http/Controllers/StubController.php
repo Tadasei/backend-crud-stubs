@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Stub\DeleteStubRequest;
 use App\Http\Requests\Stub\StoreStubRequest;
 use App\Http\Requests\Stub\UpdateStubRequest;
+use App\Models\Stub;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use App\Models\Stub;
 use Throwable;
 
 class StubController extends Controller
@@ -21,7 +21,7 @@ class StubController extends Controller
 	{
 		$this->authorize("viewAny", Stub::class);
 
-		return view("index", [
+		return view("stub.index", [
 			"stubs" => Stub::all(),
 			"status" => session("status"),
 		]);
@@ -34,7 +34,7 @@ class StubController extends Controller
 	{
 		$this->authorize("create", Stub::class);
 
-		return view("create", [
+		return view("stub.create", [
 			"status" => session("status"),
 		]);
 	}
@@ -74,7 +74,7 @@ class StubController extends Controller
 	{
 		$this->authorize("view", $stub);
 
-		return view("show", [
+		return view("stub.show", [
 			"stub" => $stub,
 			"status" => session("status"),
 		]);
@@ -87,7 +87,7 @@ class StubController extends Controller
 	{
 		$this->authorize("edit", $stub);
 
-		return view("edit", [
+		return view("stub.edit", [
 			"stub" => $stub,
 			"status" => session("status"),
 		]);
