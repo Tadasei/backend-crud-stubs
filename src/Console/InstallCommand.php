@@ -14,34 +14,19 @@ use Symfony\Component\Process\Process;
 
 class InstallCommand extends Command
 {
-	use InstallsApiStack, InstallsBladeStack, InstallsInertiaStacks;
-
 	/**
 	 * The name and signature of the console command.
 	 *
 	 * @var string
 	 */
-	protected $signature = 'breeze:install {stack : The development stack that should be installed (blade,react,vue,api)}
-                            {--dark : Indicate that dark mode support should be installed}
-                            {--inertia : Indicate that the Vue Inertia stack should be installed (Deprecated)}
-                            {--pest : Indicate that Pest should be installed}
-                            {--ssr : Indicates if Inertia SSR support should be installed}
-                            {--typescript : Indicates if TypeScript is preferred for the Inertia stack (Experimental)}
-                            {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
-
+	protected $signature = 'make:crud-back {model : The model name to scaffold the CRUD backend for.}
+                            {--stack=api : The stack name to integrate the CRUD backend with. Defaults to "api".}';
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = "Install the Breeze controllers and resources";
-
-	/**
-	 * The available stacks.
-	 *
-	 * @var array<int, string>
-	 */
-	protected $stacks = ["blade", "react", "vue", "api"];
+	protected $description = "Scaffold CRUD backend.";
 
 	/**
 	 * Execute the console command.
@@ -50,19 +35,110 @@ class InstallCommand extends Command
 	 */
 	public function handle()
 	{
-		if ($this->argument("stack") === "vue") {
-			return $this->installInertiaVueStack();
-		} elseif ($this->argument("stack") === "react") {
-			return $this->installInertiaReactStack();
-		} elseif ($this->argument("stack") === "api") {
-			return $this->installApiStack();
-		} elseif ($this->argument("stack") === "blade") {
-			return $this->installBladeStack();
-		}
+		$model = $this->argument("model");
+		$stack = $this->option("stack");
 
-		$this->components->error(
-			"Invalid stack. Supported stacks are [blade], [react], [vue], and [api]."
-		);
+		// Check stack validity
+		if (!in_array($stack, ["blade", "vue", "api"])) {
+			$this->components->error(
+				"Invalid stack. Supported stacks are [blade], [vue], and [api]."
+			);
+		} else {
+			// Install the stack
+			$paths = [
+				"delete_request" => app_path(
+					"Http/Requests/$model/Delete{$model}Request.php"
+				),
+				"base_request" => app_path(
+					"Http/Requests/$model/{$model}Request.php"
+				),
+				"store_request" => app_path(
+					"Http/Requests/$model/Store{$model}Request.php"
+				),
+				"update_request" => app_path(
+					"Http/Requests/$model/Update{$model}Request.php"
+				),
+				"policies" => app_path("Policies/{$model}Policy.php"),
+				"controllers" => app_path(
+					"Http/Controllers/{$model}Controller.php"
+				),
+				"routes" => base_path(
+					"routes/" . str($model)->lower() . ".php"
+				),
+			];
+
+			// Common files
+
+			//Requests
+
+			copy(
+				__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/DeleteStubRequest.php",
+				$paths["delete_request"]
+			);
+
+			copy(
+				__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/StubRequest.php",
+				$paths["base_request"]
+			);
+
+			copy(
+				__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/StoreStubRequest.php",
+				$paths["store_request"]
+			);
+
+			copy(
+				__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/UpdateStubRequest.php",
+				$paths["update_request"]
+			);
+
+			//Policies
+
+			copy(
+				__DIR__ . "/../../stubs/common/app/Policies/StubPolicy.php",
+				$paths["policies"]
+			);
+
+			// Stack specific files
+
+			//Controllers
+
+			copy(
+				__DIR__ .
+					"/../../stubs/$stack/app/Http/Controllers/StubController.php",
+				$paths["controllers"]
+			);
+
+			//Routes
+
+			copy(
+				__DIR__ . "/../../stubs/$stack/routes/stub.php",
+				$paths["routes"]
+			);
+
+			// Updating files content with model name
+
+			foreach ($paths as $path) {
+				$this->replaceInFile("Stubs", str($model)->plural(), $path);
+
+				$this->replaceInFile("Stub", $model, $path);
+
+				$this->replaceInFile(
+					"stubs",
+					str($model)
+						->lower()
+						->plural(),
+					$path
+				);
+
+				$this->replaceInFile("stub", str($model)->lower(), $path);
+			}
+
+			$this->components->info("Scaffolding complete.");
+		}
 
 		return 1;
 	}
@@ -76,96 +152,14 @@ class InstallCommand extends Command
 	 */
 	protected function interact(InputInterface $input, OutputInterface $output)
 	{
-		if ($this->argument("stack") === null && $this->option("inertia")) {
-			$input->setArgument("stack", "vue");
-		}
-
-		if ($this->argument("stack")) {
+		if ($this->argument("model")) {
 			return;
 		}
 
 		$input->setArgument(
-			"stack",
-			$this->components->choice(
-				"Which stack would you like to install?",
-				$this->stacks
-			)
+			"model",
+			$this->components->ask("Please input the model name to use")
 		);
-
-		$input->setOption(
-			"dark",
-			$this->components->confirm(
-				"Would you like to install dark mode support?"
-			)
-		);
-
-		if (in_array($input->getArgument("stack"), ["vue", "react"])) {
-			$input->setOption(
-				"typescript",
-				$this->components->confirm(
-					"Would you like TypeScript support? (Experimental)"
-				)
-			);
-
-			$input->setOption(
-				"ssr",
-				$this->components->confirm(
-					"Would you like to install Inertia SSR support?"
-				)
-			);
-		}
-
-		$input->setOption(
-			"pest",
-			$this->components->confirm(
-				"Would you prefer Pest tests instead of PHPUnit?"
-			)
-		);
-	}
-
-	/**
-	 * Install Breeze's tests.
-	 *
-	 * @return bool
-	 */
-	protected function installTests()
-	{
-		(new Filesystem())->ensureDirectoryExists(base_path("tests/Feature"));
-
-		$stubStack = $this->argument("stack") === "api" ? "api" : "default";
-
-		if ($this->option("pest")) {
-			$this->removeComposerPackages(["phpunit/phpunit"], true);
-
-			if (
-				!$this->requireComposerPackages(
-					["pestphp/pest:^2.0", "pestphp/pest-plugin-laravel:^2.0"],
-					true
-				)
-			) {
-				return false;
-			}
-
-			(new Filesystem())->copyDirectory(
-				__DIR__ . "/../../stubs/" . $stubStack . "/pest-tests/Feature",
-				base_path("tests/Feature")
-			);
-			(new Filesystem())->copyDirectory(
-				__DIR__ . "/../../stubs/" . $stubStack . "/pest-tests/Unit",
-				base_path("tests/Unit")
-			);
-			(new Filesystem())->copy(
-				__DIR__ . "/../../stubs/" . $stubStack . "/pest-tests/Pest.php",
-				base_path("tests/Pest.php")
-			);
-		} else {
-			(new Filesystem())->copyDirectory(
-				__DIR__ . "/../../stubs/" . $stubStack . "/tests/Feature",
-				base_path("tests/Feature")
-			);
-		}
-
-		return true;
 	}
 
 	/**
