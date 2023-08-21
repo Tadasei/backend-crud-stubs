@@ -67,6 +67,20 @@ class InstallCommand extends Command
 				),
 			];
 
+			foreach (
+				[
+					base_path("routes"),
+					app_path("Http/Controllers"),
+					app_path("Http/Requests"),
+					app_path("Policies"),
+				]
+				as $target_directory
+			) {
+				if (!file_exists($target_directory)) {
+					mkdir($target_directory);
+				}
+			}
+
 			// Common files
 
 			//Requests
