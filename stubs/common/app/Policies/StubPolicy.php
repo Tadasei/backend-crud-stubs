@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Stub;
+use App\Models\User;
 
 class StubPolicy
 {
@@ -11,14 +11,6 @@ class StubPolicy
 	 * Determine whether the user can view any models.
 	 */
 	public function viewAny(User $user): bool
-	{
-		return true;
-	}
-
-	/**
-	 * Determine whether the user can view the model.
-	 */
-	public function view(User $user, Stub $stub): bool
 	{
 		return true;
 	}
@@ -32,9 +24,33 @@ class StubPolicy
 	}
 
 	/**
+	 * Determine whether the user can store the model.
+	 */
+	public function store(User $user, $context = null): bool
+	{
+		return true;
+	}
+
+	/**
+	 * Determine whether the user can view the model.
+	 */
+	public function view(User $user, Stub $stub): bool
+	{
+		return true;
+	}
+
+	/**
+	 * Determine whether the user can edit the model.
+	 */
+	public function edit(User $user, Stub $stub): bool
+	{
+		return true;
+	}
+
+	/**
 	 * Determine whether the user can update the model.
 	 */
-	public function update(User $user, Stub $stub): bool
+	public function update(User $user, Stub $stub, $context = null): bool
 	{
 		return true;
 	}
@@ -42,7 +58,7 @@ class StubPolicy
 	/**
 	 * Determine whether the user can delete the model.
 	 */
-	public function delete(User $user, Stub $stub): bool
+	public function delete(User $user, Stub $stub, $context = null): bool
 	{
 		return true;
 	}
