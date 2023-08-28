@@ -14,7 +14,7 @@ This package provides stubs for generating CRUD backends using different technol
 You can install the package via Composer by running:
 
 ```bash
-composer require tadasei/backend-crud-stubs
+composer require tadasei/backend-crud-stubs --dev
 ```
 
 ## Usage
