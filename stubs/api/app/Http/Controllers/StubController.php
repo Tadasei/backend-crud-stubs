@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Stub\DeleteStubRequest;
 use App\Http\Requests\Stub\StoreStubRequest;
 use App\Http\Requests\Stub\UpdateStubRequest;
+use App\Models\Stub;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use App\Models\Stub;
 
 class StubController extends Controller
 {
@@ -49,7 +49,7 @@ class StubController extends Controller
 			return Stub::create($request->validated());
 		});
 
-		return response()->json(["id" => $stub->id]);
+		return response()->json(["id" => $stub->id], 201);
 	}
 
 	/**
