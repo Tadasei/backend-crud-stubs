@@ -18,14 +18,14 @@ class InstallCommand extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'make:crud-back {model : The model name to scaffold the CRUD backend for.}
-                            {--stack=api : The stack name to integrate the CRUD backend with. Defaults to "api".}';
+	protected $signature = 'crud:generate {resource : The CRUD resource name.}
+                            {--stack=api : The stack to integrate the CRUD backend with. Defaults to "api".}';
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = "Scaffold CRUD backend.";
+	protected $description = "Generate CRUD backend.";
 
 	/**
 	 * Execute the console command.
@@ -34,7 +34,7 @@ class InstallCommand extends Command
 	 */
 	public function handle()
 	{
-		$model = $this->argument("model");
+		$model = $this->argument("resource");
 		$stack = $this->option("stack");
 
 		// Check stack validity
@@ -165,13 +165,13 @@ class InstallCommand extends Command
 	 */
 	protected function interact(InputInterface $input, OutputInterface $output)
 	{
-		if ($this->argument("model")) {
+		if ($this->argument("resource")) {
 			return;
 		}
 
 		$input->setArgument(
-			"model",
-			$this->components->ask("Please input the model name to use")
+			"resource",
+			$this->components->ask("Please input the CRUD resource name to use")
 		);
 	}
 
