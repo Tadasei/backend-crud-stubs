@@ -1,5 +1,5 @@
-```markdown
-# tadasei/backend-crud-stubs
+
+# Tadasei/backend-crud-stubs
 
 This package provides stubs for generating CRUD backends using different technology stacks in a Laravel application. It aims to simplify and streamline the process of creating common CRUD (Create, Read, Update, Delete) operations by providing pre-defined structures.
 
@@ -58,4 +58,3 @@ Contributions are welcome! If you have suggestions, bug reports, or feature requ
 ## License
 
 This package is open-source software licensed under the [MIT license](LICENSE).
-```
