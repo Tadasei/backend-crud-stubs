@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
@@ -393,21 +392,5 @@ class InstallCommand extends Command
 		$process->run(function ($type, $line) {
 			$this->output->write("    " . $line);
 		});
-	}
-
-	/**
-	 * Remove Tailwind dark classes from the given files.
-	 *
-	 * @param  \Symfony\Component\Finder\Finder  $finder
-	 * @return void
-	 */
-	protected function removeDarkClasses(Finder $finder)
-	{
-		foreach ($finder as $file) {
-			file_put_contents(
-				$file->getPathname(),
-				preg_replace('/\sdark:[^\s"\']+/', "", $file->getContents())
-			);
-		}
 	}
 }
