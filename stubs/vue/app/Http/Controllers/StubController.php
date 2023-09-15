@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LazyLoadRequest;
 use App\Http\Requests\Stub\DeleteStubRequest;
 use App\Http\Requests\Stub\StoreStubRequest;
 use App\Http\Requests\Stub\UpdateStubRequest;
+use App\Http\Traits\LazyLoad;
 use App\Models\Stub;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -15,6 +18,15 @@ use Throwable;
 
 class StubController extends Controller
 {
+	use LazyLoad;
+
+	public function lazy(LazyLoadRequest $request): JsonResponse
+	{
+		return response()->json([
+			"stubs" => $this->getLazyLoadPaginator($request, Stub::query()),
+		]);
+	}
+
 	/**
 	 * Display a listing of the resource.
 	 */
@@ -23,7 +35,7 @@ class StubController extends Controller
 		$this->authorize("viewAny", Stub::class);
 
 		return Inertia::render("Stub/Index", [
-			"stubs" => Stub::all(),
+			"stubs" => Stub::orderBy("id", "desc")->paginate(10),
 			"status" => session("status"),
 		]);
 	}
