@@ -8,3 +8,5 @@ Route::delete("/stubs", [StubController::class, "destroy"])->name(
 );
 
 Route::resource("stubs", StubController::class)->except(["destroy"]);
+
+Route::put("/lazy/stubs", [StubController::class, "lazy"])->name("stubs.lazy");
