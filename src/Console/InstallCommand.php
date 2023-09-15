@@ -44,7 +44,10 @@ class InstallCommand extends Command
 			);
 		} else {
 			// Install the stack
-			$paths = [
+
+			// Setting up model specific paths to be replaced with model name
+
+			$model_specific_paths = [
 				"delete_request" => app_path(
 					"Http/Requests/$model/Delete{$model}Request.php"
 				),
@@ -66,14 +69,19 @@ class InstallCommand extends Command
 				),
 			];
 
+			// Ensuring required directories exist
+
 			foreach (
 				[
-					//Model specific directories
+					// CRUD specific directories
+
 					base_path("routes"),
 					app_path("Http/Controllers"),
 					app_path("Http/Requests/$model"),
 					app_path("Policies"),
-					//Lazy loading specific directories
+
+					// Lazy loading specific directories
+
 					app_path("Http/Traits"),
 					app_path("Rules"),
 				]
@@ -84,45 +92,40 @@ class InstallCommand extends Command
 				}
 			}
 
-			// Common files
-
-			//Requests
-
-			copy(
-				__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/DeleteStubRequest.php",
-				$paths["delete_request"]
-			);
-
-			copy(
-				__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/StubRequest.php",
-				$paths["base_request"]
-			);
-
-			copy(
-				__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/StoreStubRequest.php",
-				$paths["store_request"]
-			);
-
-			copy(
-				__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/UpdateStubRequest.php",
-				$paths["update_request"]
-			);
-
-			//Policies
-
-			copy(
-				__DIR__ . "/../../stubs/common/app/Policies/StubPolicy.php",
-				$paths["policies"]
-			);
-
-			//Lazy loading
+			// Copying files
 
 			foreach (
 				[
+					// Common files
+
+					// Requests
+
+					__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/DeleteStubRequest.php" => $model_specific_paths[
+						"delete_request"
+					],
+					__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/StubRequest.php" => $model_specific_paths[
+						"base_request"
+					],
+					__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/StoreStubRequest.php" => $model_specific_paths[
+						"store_request"
+					],
+					__DIR__ .
+					"/../../stubs/common/app/Http/Requests/Stub/UpdateStubRequest.php" => $model_specific_paths[
+						"update_request"
+					],
+
+					// Policies
+
+					__DIR__ .
+					"/../../stubs/common/app/Policies/StubPolicy.php" => $model_specific_paths[
+						"policies"
+					],
+
+					// Lazy loading
+
 					__DIR__ .
 					"/../../stubs/common/app/Http/Requests/LazyLoadRequest.php" => app_path(
 						"Http/Requests/LazyLoadRequest.php"
@@ -139,6 +142,22 @@ class InstallCommand extends Command
 					"/../../stubs/common/app/Rules/ValidFilterValue.php" => app_path(
 						"Rules/ValidFilterValue.php"
 					),
+
+					// Stack specific files
+
+					// Controllers
+
+					__DIR__ .
+					"/../../stubs/$stack/app/Http/Controllers/StubController.php" => $model_specific_paths[
+						"controllers"
+					],
+
+					// Routes
+
+					__DIR__ .
+					"/../../stubs/$stack/routes/stub.php" => $model_specific_paths[
+						"routes"
+					],
 				]
 				as $sourcePath => $targetPath
 			) {
@@ -147,39 +166,30 @@ class InstallCommand extends Command
 				}
 			}
 
-			// Stack specific files
+			// Updating model specific files content with model name
 
-			//Controllers
+			foreach ($model_specific_paths as $model_specific_path) {
+				$this->replaceInFile(
+					"Stubs",
+					str($model)->plural(),
+					$model_specific_path
+				);
 
-			copy(
-				__DIR__ .
-					"/../../stubs/$stack/app/Http/Controllers/StubController.php",
-				$paths["controllers"]
-			);
-
-			//Routes
-
-			copy(
-				__DIR__ . "/../../stubs/$stack/routes/stub.php",
-				$paths["routes"]
-			);
-
-			// Updating files content with model name
-
-			foreach ($paths as $path) {
-				$this->replaceInFile("Stubs", str($model)->plural(), $path);
-
-				$this->replaceInFile("Stub", $model, $path);
+				$this->replaceInFile("Stub", $model, $model_specific_path);
 
 				$this->replaceInFile(
 					"stubs",
 					str($model)
 						->lower()
 						->plural(),
-					$path
+					$model_specific_path
 				);
 
-				$this->replaceInFile("stub", str($model)->lower(), $path);
+				$this->replaceInFile(
+					"stub",
+					str($model)->lower(),
+					$model_specific_path
+				);
 			}
 
 			$this->components->info("Scaffolding complete.");
