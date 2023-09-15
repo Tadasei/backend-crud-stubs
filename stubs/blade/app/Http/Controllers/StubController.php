@@ -141,13 +141,13 @@ class StubController extends Controller
 	 */
 	public function destroy(DeleteStubRequest $request): RedirectResponse
 	{
-		$this->authorize("delete", [Stub::class, $request->ids]);
+		$this->authorize("delete", [Stub::class, $request->stubs]);
 
 		$response = redirect()->route("stubs.index");
 
 		try {
 			DB::transaction(function () use ($request) {
-				Stub::whereIn("id", $request->ids)->delete();
+				Stub::whereIn("id", $request->stubs)->delete();
 			});
 
 			$response->with("message", [

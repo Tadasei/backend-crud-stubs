@@ -96,10 +96,10 @@ class StubController extends Controller
 	 */
 	public function destroy(DeleteStubRequest $request): Response
 	{
-		$this->authorize("delete", [Stub::class, $request->ids]);
+		$this->authorize("delete", [Stub::class, $request->stubs]);
 
 		DB::transaction(function () use ($request) {
-			Stub::whereIn("id", $request->ids)->delete();
+			Stub::whereIn("id", $request->stubs)->delete();
 		});
 
 		return response()->noContent();
