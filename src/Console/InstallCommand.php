@@ -68,10 +68,14 @@ class InstallCommand extends Command
 
 			foreach (
 				[
+					//Model specific directories
 					base_path("routes"),
 					app_path("Http/Controllers"),
 					app_path("Http/Requests/$model"),
 					app_path("Policies"),
+					//Lazy loading specific directories
+					app_path("Http/Traits"),
+					app_path("Rules"),
 				]
 				as $target_directory
 			) {
@@ -114,6 +118,34 @@ class InstallCommand extends Command
 				__DIR__ . "/../../stubs/common/app/Policies/StubPolicy.php",
 				$paths["policies"]
 			);
+
+			//Lazy loading
+
+			foreach (
+				[
+					__DIR__ .
+					"/../../stubs/common/app/Http/Requests/LazyLoadRequest.php" => app_path(
+						"Http/Requests/LazyLoadRequest.php"
+					),
+					__DIR__ .
+					"/../../stubs/common/app/Http/Traits/LazyLoad.php" => app_path(
+						"Http/Traits/LazyLoad.php"
+					),
+					__DIR__ .
+					"/../../stubs/common/app/Rules/PresentWithout.php" => app_path(
+						"Rules/PresentWithout.php"
+					),
+					__DIR__ .
+					"/../../stubs/common/app/Rules/ValidFilterValue.php" => app_path(
+						"Rules/ValidFilterValue.php"
+					),
+				]
+				as $sourcePath => $targetPath
+			) {
+				if (!file_exists($targetPath)) {
+					copy($sourcePath, $targetPath);
+				}
+			}
 
 			// Stack specific files
 
