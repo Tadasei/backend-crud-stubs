@@ -137,6 +137,7 @@ class LazyLoadRequest extends FormRequest
 			],
 			"page" => ["required", "numeric", "integer", "min:1"],
 			"pageCount" => ["sometimes", "numeric", "integer", "min:1"],
+			"paginate" => ["required", "boolean"],
 		];
 	}
 

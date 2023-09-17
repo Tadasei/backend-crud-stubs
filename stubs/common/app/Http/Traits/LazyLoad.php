@@ -5,6 +5,7 @@ namespace App\Http\Traits;
 use App\Http\Requests\LazyLoadRequest;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 
@@ -152,12 +153,13 @@ trait LazyLoad
 	private function getLazyLoadPaginator(
 		LazyLoadRequest $request,
 		Builder $query
-	): LengthAwarePaginator {
+	): LengthAwarePaginator|Collection {
 		[
 			"filters" => $filters,
 			"multiSortMeta" => $multiSortMeta,
 			"rows" => $rows,
 			"globalFilterFields" => $globalFilterFields,
+			"paginate" => $paginate,
 		] = $request->validated();
 
 		$globalFilter = Arr::pull($filters, "global");
@@ -219,6 +221,6 @@ trait LazyLoad
 			);
 		}
 
-		return $query->paginate($rows);
+		return $paginate ? $query->paginate($rows) : $query->get();
 	}
 }
