@@ -20,7 +20,7 @@ class StubController extends Controller
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
 		return response()->json([
-			"stubs" => $this->getLazyLoadPaginator($request, Stub::query()),
+			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
 		]);
 	}
 

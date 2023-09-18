@@ -150,7 +150,7 @@ trait LazyLoad
 		};
 	}
 
-	private function getLazyLoadPaginator(
+	private function getLazyLoadedData(
 		LazyLoadRequest $request,
 		Builder $query
 	): LengthAwarePaginator|Collection {
