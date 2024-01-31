@@ -178,6 +178,40 @@ class InstallCommand extends Command
 				$this->replaceInFile("Stub", $model, $model_specific_path);
 
 				$this->replaceInFile(
+					'$stubs',
+					str($model)
+						->plural()
+						->camel()
+						->prepend('$'),
+					$model_specific_path
+				);
+
+				$this->replaceInFile(
+					'$stub',
+					str($model)
+						->camel()
+						->prepend('$'),
+					$model_specific_path
+				);
+
+				$this->replaceInFile(
+					"->stubs",
+					str($model)
+						->plural()
+						->camel()
+						->prepend("->"),
+					$model_specific_path
+				);
+
+				$this->replaceInFile(
+					"->stub",
+					str($model)
+						->camel()
+						->prepend("->"),
+					$model_specific_path
+				);
+
+				$this->replaceInFile(
 					"stubs",
 					str($model)
 						->plural()
