@@ -65,7 +65,7 @@ class InstallCommand extends Command
 					"Http/Controllers/{$model}Controller.php"
 				),
 				"routes" => base_path(
-					"routes/" . str($model)->lower() . ".php"
+					"routes/" . str($model)->kebab() . ".php"
 				),
 			];
 
@@ -180,14 +180,14 @@ class InstallCommand extends Command
 				$this->replaceInFile(
 					"stubs",
 					str($model)
-						->lower()
-						->plural(),
+						->plural()
+						->kebab(),
 					$model_specific_path
 				);
 
 				$this->replaceInFile(
 					"stub",
-					str($model)->lower(),
+					str($model)->kebab(),
 					$model_specific_path
 				);
 			}
