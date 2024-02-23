@@ -65,7 +65,7 @@ class InstallCommand extends Command
 					"Http/Controllers/{$model}Controller.php"
 				),
 				"routes" => base_path(
-					"routes/" . str($model)->kebab() . ".php"
+					"routes/resources/" . str($model)->kebab() . ".php"
 				),
 			];
 
@@ -75,7 +75,7 @@ class InstallCommand extends Command
 				[
 					// CRUD specific directories
 
-					base_path("routes"),
+					base_path("routes/resources"),
 					app_path("Http/Controllers"),
 					app_path("Http/Requests/$model"),
 					app_path("Policies"),
