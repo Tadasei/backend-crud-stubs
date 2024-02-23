@@ -4,10 +4,10 @@ namespace App\Http\Traits;
 
 use App\Http\Requests\LazyLoadRequest;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
+
+use Illuminate\Database\Eloquent\{Builder, Collection};
 
 trait LazyLoad
 {

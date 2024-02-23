@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LazyLoadRequest;
-use App\Http\Requests\Stub\DeleteStubRequest;
-use App\Http\Requests\Stub\StoreStubRequest;
-use App\Http\Requests\Stub\UpdateStubRequest;
 use App\Http\Traits\LazyLoad;
 use App\Models\Stub;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
+
+use App\Http\Requests\{
+	Stub\DeleteStubRequest,
+	Stub\StoreStubRequest,
+	Stub\UpdateStubRequest,
+	LazyLoadRequest
+};
+use Illuminate\Http\{JsonResponse, RedirectResponse};
 
 class StubController extends Controller
 {

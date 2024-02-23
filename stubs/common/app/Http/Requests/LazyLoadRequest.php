@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\PresentWithout;
-use App\Rules\ValidFilterValue;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
+
+use App\Rules\{PresentWithout, ValidFilterValue};
 
 class LazyLoadRequest extends FormRequest
 {

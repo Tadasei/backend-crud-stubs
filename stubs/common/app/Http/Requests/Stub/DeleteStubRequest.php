@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Stub;
 
+use App\Models\Stub;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\Stub;
 
 class DeleteStubRequest extends FormRequest
 {

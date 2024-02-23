@@ -2,8 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Stub;
-use App\Models\User;
+use App\Models\{Stub, User};
 
 class StubPolicy
 {
