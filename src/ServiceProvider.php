@@ -4,40 +4,37 @@ namespace Tadasei\BackendCrudStubs;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Tadasei\BackendCrudStubs\Console\InstallCommand;
 
 class ServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
 	/**
 	 * Register any application services.
-	 *
-	 * @return void
 	 */
-	public function register()
+	public function register(): void
 	{
 		//
 	}
 
 	/**
 	 * Bootstrap any application services.
-	 *
-	 * @return void
 	 */
-	public function boot()
+	public function boot(): void
 	{
 		if (!$this->app->runningInConsole()) {
 			return;
 		}
 
-		$this->commands([Console\InstallCommand::class]);
+		$this->commands([InstallCommand::class]);
 	}
 
 	/**
 	 * Get the services provided by the provider.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
-	public function provides()
+	public function provides(): array
 	{
-		return [Console\InstallCommand::class];
+		return [InstallCommand::class];
 	}
 }
