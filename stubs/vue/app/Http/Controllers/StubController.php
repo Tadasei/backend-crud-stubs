@@ -135,7 +135,9 @@ class StubController extends Controller
 	 */
 	public function destroy(DeleteStubRequest $request): RedirectResponse
 	{
-		Gate::authorize("delete", [Stub::class, $request->stubs]);
+		Stub::whereIn("id", $request->stubs)
+			->get()
+			->each(fn(Stub $stub) => Gate::authorize("delete", $stub));
 
 		$response = redirect()->route("stubs.index");
 
