@@ -82,7 +82,7 @@ class InstallCommand extends Command
 
 					// Lazy loading specific directories
 
-					app_path("Http/Traits"),
+					app_path("Traits"),
 					app_path("Rules"),
 				]
 				as $target_directory
@@ -131,8 +131,8 @@ class InstallCommand extends Command
 						"Http/Requests/LazyLoadRequest.php"
 					),
 					__DIR__ .
-					"/../../stubs/common/app/Http/Traits/LazyLoad.php" => app_path(
-						"Http/Traits/LazyLoad.php"
+					"/../../stubs/common/app/Traits/LazyLoad.php" => app_path(
+						"Traits/LazyLoad.php"
 					),
 					__DIR__ .
 					"/../../stubs/common/app/Rules/PresentWithout.php" => app_path(
