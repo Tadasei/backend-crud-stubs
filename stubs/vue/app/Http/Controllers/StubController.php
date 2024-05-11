@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Stub;
 use App\Traits\LazyLoad;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 
 use App\Http\Requests\{
@@ -15,6 +14,7 @@ use App\Http\Requests\{
 	LazyLoadRequest
 };
 use Illuminate\Http\{JsonResponse, RedirectResponse};
+use Illuminate\Support\Facades\{DB, Gate};
 use Inertia\{Inertia, Response};
 
 class StubController extends Controller
@@ -23,7 +23,7 @@ class StubController extends Controller
 
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
-		$this->authorize("viewAny", Stub::class);
+		Gate::authorize("viewAny", Stub::class);
 
 		return response()->json([
 			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
@@ -35,7 +35,7 @@ class StubController extends Controller
 	 */
 	public function index(): Response
 	{
-		$this->authorize("viewAny", Stub::class);
+		Gate::authorize("viewAny", Stub::class);
 
 		return Inertia::render("Stub/Index", [
 			"stubs" => Stub::latest()->paginate(5),
@@ -47,7 +47,7 @@ class StubController extends Controller
 	 */
 	public function create(): Response
 	{
-		$this->authorize("create", Stub::class);
+		Gate::authorize("create", Stub::class);
 
 		return Inertia::render("Stub/Create");
 	}
@@ -57,7 +57,7 @@ class StubController extends Controller
 	 */
 	public function store(StoreStubRequest $request): RedirectResponse
 	{
-		$this->authorize("store", [Stub::class, $request->validated()]);
+		Gate::authorize("store", [Stub::class, $request->validated()]);
 
 		$response = redirect()->route("stubs.index");
 
@@ -83,7 +83,7 @@ class StubController extends Controller
 	 */
 	public function show(Stub $stub): Response
 	{
-		$this->authorize("view", $stub);
+		Gate::authorize("view", $stub);
 
 		return Inertia::render("Stub/Show", [
 			"stub" => $stub,
@@ -95,7 +95,7 @@ class StubController extends Controller
 	 */
 	public function edit(Stub $stub): Response
 	{
-		$this->authorize("edit", $stub);
+		Gate::authorize("edit", $stub);
 
 		return Inertia::render("Stub/Edit", [
 			"stub" => $stub,
@@ -109,7 +109,7 @@ class StubController extends Controller
 		UpdateStubRequest $request,
 		Stub $stub
 	): RedirectResponse {
-		$this->authorize("update", [$stub, $request->validated()]);
+		Gate::authorize("update", [$stub, $request->validated()]);
 
 		$response = redirect()->route("stubs.index");
 
@@ -135,7 +135,7 @@ class StubController extends Controller
 	 */
 	public function destroy(DeleteStubRequest $request): RedirectResponse
 	{
-		$this->authorize("delete", [Stub::class, $request->stubs]);
+		Gate::authorize("delete", [Stub::class, $request->stubs]);
 
 		$response = redirect()->route("stubs.index");
 
