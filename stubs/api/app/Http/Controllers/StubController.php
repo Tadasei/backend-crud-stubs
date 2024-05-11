@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\LazyLoad;
 use App\Models\Stub;
+use App\Traits\LazyLoad;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\{
@@ -21,6 +21,8 @@ class StubController extends Controller
 
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
+		$this->authorize("viewAny", Stub::class);
+
 		return response()->json([
 			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
 		]);
@@ -34,20 +36,7 @@ class StubController extends Controller
 		$this->authorize("viewAny", Stub::class);
 
 		return response()->json([
-			"stubs" => Stub::orderBy("id", "desc")->paginate(10),
-			"status" => session("status"),
-		]);
-	}
-
-	/**
-	 * Show the form for creating a new resource.
-	 */
-	public function create(): JsonResponse
-	{
-		$this->authorize("create", Stub::class);
-
-		return response()->json([
-			"status" => session("status"),
+			"stubs" => Stub::latest()->paginate(5),
 		]);
 	}
 
@@ -58,9 +47,7 @@ class StubController extends Controller
 	{
 		$this->authorize("store", [Stub::class, $request->validated()]);
 
-		$stub = DB::transaction(function () use ($request) {
-			return Stub::create($request->validated());
-		});
+		$stub = DB::transaction(fn() => Stub::create($request->validated()));
 
 		return response()->json(["id" => $stub->id], 201);
 	}
@@ -74,7 +61,6 @@ class StubController extends Controller
 
 		return response()->json([
 			"stub" => $stub,
-			"status" => session("status"),
 		]);
 	}
 
@@ -85,10 +71,7 @@ class StubController extends Controller
 	{
 		$this->authorize("update", [$stub, $request->validated()]);
 
-		DB::transaction(function () use ($request, $stub) {
-			$stub->fill($request->validated());
-			$stub->save();
-		});
+		DB::transaction(fn() => $stub->update($request->validated()));
 
 		return response()->noContent();
 	}
@@ -100,9 +83,7 @@ class StubController extends Controller
 	{
 		$this->authorize("delete", [Stub::class, $request->stubs]);
 
-		DB::transaction(function () use ($request) {
-			Stub::whereIn("id", $request->stubs)->delete();
-		});
+		DB::transaction(fn() => Stub::whereIn("id", $request->stubs)->delete());
 
 		return response()->noContent();
 	}
