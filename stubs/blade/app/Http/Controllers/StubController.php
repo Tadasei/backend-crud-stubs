@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\LazyLoad;
 use App\Models\Stub;
+use App\Traits\LazyLoad;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Throwable;
@@ -23,6 +23,8 @@ class StubController extends Controller
 
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
+		$this->authorize("viewAny", Stub::class);
+
 		return response()->json([
 			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
 		]);
@@ -36,8 +38,7 @@ class StubController extends Controller
 		$this->authorize("viewAny", Stub::class);
 
 		return view("stub.index", [
-			"stubs" => Stub::orderBy("id", "desc")->paginate(10),
-			"status" => session("status"),
+			"stubs" => Stub::latest()->paginate(5),
 		]);
 	}
 
@@ -48,9 +49,7 @@ class StubController extends Controller
 	{
 		$this->authorize("create", Stub::class);
 
-		return view("stub.create", [
-			"status" => session("status"),
-		]);
+		return view("stub.create");
 	}
 
 	/**
@@ -63,9 +62,7 @@ class StubController extends Controller
 		$response = redirect()->route("stubs.index");
 
 		try {
-			DB::transaction(function () use ($request) {
-				Stub::create($request->validated());
-			});
+			DB::transaction(fn() => Stub::create($request->validated()));
 
 			$response->with("message", [
 				"severity" => "success",
@@ -90,7 +87,6 @@ class StubController extends Controller
 
 		return view("stub.show", [
 			"stub" => $stub,
-			"status" => session("status"),
 		]);
 	}
 
@@ -103,7 +99,6 @@ class StubController extends Controller
 
 		return view("stub.edit", [
 			"stub" => $stub,
-			"status" => session("status"),
 		]);
 	}
 
@@ -119,10 +114,7 @@ class StubController extends Controller
 		$response = redirect()->route("stubs.index");
 
 		try {
-			DB::transaction(function () use ($request, $stub) {
-				$stub->fill($request->validated());
-				$stub->save();
-			});
+			DB::transaction(fn() => $stub->update($request->validated()));
 
 			$response->with("message", [
 				"severity" => "success",
@@ -148,9 +140,9 @@ class StubController extends Controller
 		$response = redirect()->route("stubs.index");
 
 		try {
-			DB::transaction(function () use ($request) {
-				Stub::whereIn("id", $request->stubs)->delete();
-			});
+			DB::transaction(
+				fn() => Stub::whereIn("id", $request->stubs)->delete()
+			);
 
 			$response->with("message", [
 				"severity" => "success",
