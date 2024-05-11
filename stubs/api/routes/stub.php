@@ -7,6 +7,6 @@ Route::delete("/stubs", [StubController::class, "destroy"])->name(
 	"stubs.destroy"
 );
 
-Route::resource("stubs", StubController::class)->except(["edit", "destroy"]);
+Route::apiResource("stubs", StubController::class)->except(["destroy"]);
 
 Route::put("/lazy/stubs", [StubController::class, "lazy"])->name("stubs.lazy");
