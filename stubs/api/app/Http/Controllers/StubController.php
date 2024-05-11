@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Stub;
 use App\Traits\LazyLoad;
-use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\{
 	Stub\DeleteStubRequest,
@@ -14,6 +13,7 @@ use App\Http\Requests\{
 	LazyLoadRequest
 };
 use Illuminate\Http\{JsonResponse, Response};
+use Illuminate\Support\Facades\{DB, Gate};
 
 class StubController extends Controller
 {
@@ -21,7 +21,7 @@ class StubController extends Controller
 
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
-		$this->authorize("viewAny", Stub::class);
+		Gate::authorize("viewAny", Stub::class);
 
 		return response()->json([
 			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
@@ -33,7 +33,7 @@ class StubController extends Controller
 	 */
 	public function index(): JsonResponse
 	{
-		$this->authorize("viewAny", Stub::class);
+		Gate::authorize("viewAny", Stub::class);
 
 		return response()->json([
 			"stubs" => Stub::latest()->paginate(5),
@@ -45,7 +45,7 @@ class StubController extends Controller
 	 */
 	public function store(StoreStubRequest $request): JsonResponse
 	{
-		$this->authorize("store", [Stub::class, $request->validated()]);
+		Gate::authorize("store", [Stub::class, $request->validated()]);
 
 		$stub = DB::transaction(fn() => Stub::create($request->validated()));
 
@@ -57,7 +57,7 @@ class StubController extends Controller
 	 */
 	public function show(Stub $stub): JsonResponse
 	{
-		$this->authorize("view", $stub);
+		Gate::authorize("view", $stub);
 
 		return response()->json([
 			"stub" => $stub,
@@ -69,7 +69,7 @@ class StubController extends Controller
 	 */
 	public function update(UpdateStubRequest $request, Stub $stub): Response
 	{
-		$this->authorize("update", [$stub, $request->validated()]);
+		Gate::authorize("update", [$stub, $request->validated()]);
 
 		DB::transaction(fn() => $stub->update($request->validated()));
 
@@ -81,7 +81,7 @@ class StubController extends Controller
 	 */
 	public function destroy(DeleteStubRequest $request): Response
 	{
-		$this->authorize("delete", [Stub::class, $request->stubs]);
+		Gate::authorize("delete", [Stub::class, $request->stubs]);
 
 		DB::transaction(fn() => Stub::whereIn("id", $request->stubs)->delete());
 
