@@ -154,73 +154,75 @@ trait LazyLoad
 		LazyLoadRequest $request,
 		Builder $query
 	): LengthAwarePaginator|Collection {
-		[
-			"filters" => $filters,
-			"multiSortMeta" => $multiSortMeta,
-			"rows" => $rows,
-			"globalFilterFields" => $globalFilterFields,
-			"paginate" => $paginate,
-		] = $request->validated();
+		if ($request->has("filters")) {
+			$globalFilter = Arr::pull($request->filters, "global");
 
-		$globalFilter = Arr::pull($filters, "global");
-
-		foreach ($filters as $field => $filterMeta) {
-			$query = $query->where(function (Builder $metaQuery) use (
-				$field,
-				$filterMeta
-			) {
-				if (!array_key_exists("constraints", $filterMeta)) {
-					$metaQuery = $this->getFilterQueryClause(
-						$metaQuery,
-						$field,
-						$filterMeta["matchMode"],
-						$filterMeta["value"]
-					);
-				} else {
-					foreach (
-						$filterMeta["constraints"]
-						as ["value" => $value, "matchMode" => $matchMode]
-					) {
+			foreach ($request->filters as $field => $filterMeta) {
+				$query = $query->where(function (Builder $metaQuery) use (
+					$field,
+					$filterMeta
+				) {
+					if (!array_key_exists("constraints", $filterMeta)) {
 						$metaQuery = $this->getFilterQueryClause(
 							$metaQuery,
 							$field,
-							$matchMode,
-							$value,
-							$filterMeta["operator"]
+							$filterMeta["matchMode"],
+							$filterMeta["value"]
+						);
+					} else {
+						foreach (
+							$filterMeta["constraints"]
+							as ["value" => $value, "matchMode" => $matchMode]
+						) {
+							$metaQuery = $this->getFilterQueryClause(
+								$metaQuery,
+								$field,
+								$matchMode,
+								$value,
+								$filterMeta["operator"]
+							);
+						}
+					}
+				});
+			}
+
+			$query = $query->when(
+				$globalFilter,
+				fn(
+					Builder $conditionalWrapperQuery
+				) => $conditionalWrapperQuery->where(function (
+					Builder $globalFilterQuery
+				) use ($globalFilter, $request) {
+					foreach (
+						$request->globalFilterFields
+						as $globalFilterField
+					) {
+						$globalFilterQuery = $this->getFilterQueryClause(
+							$globalFilterQuery,
+							$globalFilterField,
+							$globalFilter["matchMode"],
+							str($globalFilter["value"])->lower(),
+							"or"
 						);
 					}
-				}
-			});
-		}
-
-		$query = $query->when($globalFilter, function (
-			Builder $conditionalWrapperQuery
-		) use ($globalFilter, $globalFilterFields) {
-			$conditionalWrapperQuery->where(function (
-				Builder $globalFilterQuery
-			) use ($globalFilter, $globalFilterFields) {
-				foreach ($globalFilterFields as $globalFilterField) {
-					$globalFilterQuery = $this->getFilterQueryClause(
-						$globalFilterQuery,
-						$globalFilterField,
-						$globalFilter["matchMode"],
-						str($globalFilter["value"])->lower(),
-						"or"
-					);
-				}
-			});
-		});
-
-		foreach (
-			$multiSortMeta
-			as ["field" => $sortField, "order" => $sortOrder]
-		) {
-			$query = $query->orderBy(
-				$sortField,
-				$sortOrder === -1 ? "desc" : "asc"
+				})
 			);
 		}
 
-		return $paginate ? $query->paginate($rows) : $query->get();
+		if ($request->has("multiSortMeta")) {
+			foreach (
+				$request->multiSortMeta
+				as ["field" => $sortField, "order" => $sortOrder]
+			) {
+				$query = $query->orderBy(
+					$sortField,
+					$sortOrder === -1 ? "desc" : "asc"
+				);
+			}
+		}
+
+		return $request->paginate
+			? $query->paginate($request->rows)
+			: $query->get();
 	}
 }
