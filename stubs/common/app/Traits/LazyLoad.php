@@ -154,10 +154,12 @@ trait LazyLoad
 		LazyLoadRequest $request,
 		Builder $query
 	): LengthAwarePaginator|Collection {
-		if ($request->has("filters")) {
-			$globalFilter = Arr::pull($request->filters, "global");
+		$filters = $request->input("filters");
 
-			foreach ($request->filters as $field => $filterMeta) {
+		if ($filters) {
+			$globalFilter = Arr::pull($filters, "global");
+
+			foreach ($filters as $field => $filterMeta) {
 				$query = $query->where(function (Builder $metaQuery) use (
 					$field,
 					$filterMeta
