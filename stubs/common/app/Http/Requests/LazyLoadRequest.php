@@ -2,12 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidFilterValue;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
-
-use App\Rules\{PresentWithout, ValidFilterValue};
 
 class LazyLoadRequest extends FormRequest
 {
@@ -19,27 +18,8 @@ class LazyLoadRequest extends FormRequest
 	public function rules(): array
 	{
 		return [
-			"first" => ["required", "numeric", "integer", "min:0"],
-			"rows" => ["required", "numeric", "integer", "min:0"],
-			"sortField" => [
-				"missing_with:multiSortMeta",
-				new PresentWithout(["multiSortMeta"]),
-				"required_with:sortOrder",
-				"string",
-				"max:255",
-			],
-			"sortOrder" => [
-				"missing_with:multiSortMeta",
-				new PresentWithout(["multiSortMeta"]),
-				"required_with:sortField",
-				Rule::in([0, 1, -1]),
-			],
-			"multiSortMeta" => [
-				"missing_with:sortField,sortOrder",
-				new PresentWithout(["sortField", "sortOrder"]),
-				"array",
-			],
-			"multiSortMeta.*" => ["array:field,order"],
+			"multiSortMeta" => ["sometimes", "array"],
+			"multiSortMeta.*" => ["required", "array:field,order"],
 			"multiSortMeta.*.field" => [
 				"required",
 				"distinct:strict",
@@ -47,12 +27,14 @@ class LazyLoadRequest extends FormRequest
 				"max:255",
 			],
 			"multiSortMeta.*.order" => [
-				"present",
-				"nullable",
+				"required",
+				"numeric",
+				"integer",
 				Rule::in([0, 1, -1]),
 			],
-			"filters" => ["present", "array"],
+			"filters" => ["sometimes", "array"],
 			"filters.*" => [
+				"required",
 				"array:value,matchMode,operator,constraints",
 				function (string $attribute, mixed $value, Closure $fail) {
 					$possibleFields = [
@@ -128,16 +110,26 @@ class LazyLoadRequest extends FormRequest
 				"required_with:filters.*.constraints.*.value",
 				Rule::in($this->getValidMatchModes()),
 			],
-			"globalFilterFields" => ["array"],
+			"globalFilterFields" => ["sometimes", "array"],
 			"globalFilterFields.*" => [
 				"required",
 				"distinct:strict",
 				"string",
 				"max:255",
 			],
-			"page" => ["required", "numeric", "integer", "min:1"],
-			"pageCount" => ["sometimes", "numeric", "integer", "min:1"],
 			"paginate" => ["required", "boolean"],
+			"rows" => [
+				"required_if:paginate,true",
+				"numeric",
+				"integer",
+				"min:0",
+			],
+			"page" => [
+				"required_if:paginate,true",
+				"numeric",
+				"integer",
+				"min:1",
+			],
 		];
 	}
 
