@@ -36,6 +36,7 @@ trait LazyLoad
 				"lte" => $query->where($fieldName, "<=", $value),
 				"between" => $query->whereBetween($fieldName, $value),
 				"in" => $query->whereIn($fieldName, $value),
+				"notIn" => $query->whereNotIn($fieldName, $value),
 				"inMany" => $query->whereHas($fieldName, function (
 					Builder $nestedQuery
 				) use ($value, $operator) {
@@ -100,6 +101,7 @@ trait LazyLoad
 				"lte" => $query->orWhere($fieldName, "<=", $value),
 				"between" => $query->orWhereBetween($fieldName, $value),
 				"in" => $query->orWhereIn($fieldName, $value),
+				"notIn" => $query->orWhereNotIn($fieldName, $value),
 				"inMany" => $query->orWhereHas($fieldName, function (
 					Builder $nestedQuery
 				) use ($value, $operator) {

@@ -148,6 +148,7 @@ class LazyLoadRequest extends FormRequest
 			"lte",
 			"between",
 			"in",
+			"notIn",
 			"inMany",
 			"notInMany",
 			"dateAfter",

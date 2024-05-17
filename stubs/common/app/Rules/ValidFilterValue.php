@@ -43,7 +43,9 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 						"string",
 					],
 					"gt", "gte", "lt", "lte" => ["integer", "double"],
-					"between", "in", "inMany", "notInMany" => ["array"],
+					"between", "in", "notIn", "inMany", "notInMany" => [
+						"array",
+					],
 					default => null,
 				};
 			};
@@ -97,6 +99,7 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 				} else {
 					switch ($matchMode) {
 						case "in":
+						case "notIn":
 						case "inMany":
 						case "notInMany":
 							if (
