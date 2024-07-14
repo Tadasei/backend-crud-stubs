@@ -11,10 +11,8 @@ class StoreStubRequest extends StubRequest
 	 */
 	public function rules(): array
 	{
-		$rules = parent::rules();
-
-		//Add custom entries to $rules here for store method only
-
-		return $rules;
+		return array_merge_recursive(parent::rules(), [
+			//Add custom rules here for the store method only
+		]);
 	}
 }

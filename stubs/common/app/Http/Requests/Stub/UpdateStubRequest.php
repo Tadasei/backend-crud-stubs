@@ -11,10 +11,8 @@ class UpdateStubRequest extends StubRequest
 	 */
 	public function rules(): array
 	{
-		$rules = parent::rules();
-
-		//Add custom entries to $rules here for update method only
-
-		return $rules;
+		return array_merge_recursive(parent::rules(), [
+			//Add custom rules here for the update method only
+		]);
 	}
 }
