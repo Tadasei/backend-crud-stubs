@@ -65,7 +65,7 @@ class InstallCommand extends Command
 					"Http/Controllers/{$model}Controller.php"
 				),
 				"routes" => base_path(
-					"routes/resources/" . str($model)->kebab() . ".php"
+					"routes/resources/" . str($model)->snake() . ".php"
 				),
 			];
 
@@ -181,7 +181,7 @@ class InstallCommand extends Command
 					'$stubs',
 					str($model)
 						->plural()
-						->camel()
+						->snake()
 						->prepend('$'),
 					$model_specific_path
 				);
@@ -189,7 +189,7 @@ class InstallCommand extends Command
 				$this->replaceInFile(
 					'$stub',
 					str($model)
-						->camel()
+						->snake()
 						->prepend('$'),
 					$model_specific_path
 				);
@@ -198,7 +198,7 @@ class InstallCommand extends Command
 					"->stubs",
 					str($model)
 						->plural()
-						->camel()
+						->snake()
 						->prepend("->"),
 					$model_specific_path
 				);
@@ -206,7 +206,7 @@ class InstallCommand extends Command
 				$this->replaceInFile(
 					"->stub",
 					str($model)
-						->camel()
+						->snake()
 						->prepend("->"),
 					$model_specific_path
 				);
@@ -215,13 +215,13 @@ class InstallCommand extends Command
 					"stubs",
 					str($model)
 						->plural()
-						->kebab(),
+						->snake(),
 					$model_specific_path
 				);
 
 				$this->replaceInFile(
 					"stub",
-					str($model)->kebab(),
+					str($model)->snake(),
 					$model_specific_path
 				);
 			}
