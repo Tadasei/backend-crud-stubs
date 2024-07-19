@@ -11,7 +11,7 @@ class StubPolicy
 	 */
 	public function viewAny(User $user): bool
 	{
-		return true;
+		return $user->can("view stubs");
 	}
 
 	/**
@@ -19,7 +19,7 @@ class StubPolicy
 	 */
 	public function create(User $user): bool
 	{
-		return true;
+		return $user->can("create stubs");
 	}
 
 	/**
@@ -27,7 +27,7 @@ class StubPolicy
 	 */
 	public function store(User $user, $context = null): bool
 	{
-		return true;
+		return $this->create($user);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class StubPolicy
 	 */
 	public function view(User $user, Stub $stub): bool
 	{
-		return true;
+		return $this->viewAny($user);
 	}
 
 	/**
@@ -43,7 +43,7 @@ class StubPolicy
 	 */
 	public function edit(User $user, Stub $stub): bool
 	{
-		return true;
+		return $user->can("edit stubs");
 	}
 
 	/**
@@ -51,7 +51,7 @@ class StubPolicy
 	 */
 	public function update(User $user, Stub $stub, $context = null): bool
 	{
-		return true;
+		return $this->edit($user, $stub);
 	}
 
 	/**
@@ -59,7 +59,7 @@ class StubPolicy
 	 */
 	public function delete(User $user, Stub $stub, $context = null): bool
 	{
-		return true;
+		return $user->can("delete stubs");
 	}
 
 	/**
@@ -67,7 +67,7 @@ class StubPolicy
 	 */
 	public function restore(User $user, Stub $stub): bool
 	{
-		return true;
+		return $user->can("restore stubs");
 	}
 
 	/**
@@ -75,6 +75,6 @@ class StubPolicy
 	 */
 	public function forceDelete(User $user, Stub $stub): bool
 	{
-		return true;
+		return $user->can("force delete stubs");
 	}
 }
