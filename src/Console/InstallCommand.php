@@ -211,19 +211,40 @@ class InstallCommand extends Command
 					$model_specific_path
 				);
 
-				$this->replaceInFile(
-					"stubs",
-					str($model)
-						->plural()
-						->snake(),
-					$model_specific_path
-				);
+				if (
+					$model_specific_path === $model_specific_paths["policies"]
+				) {
+					$this->replaceInFile(
+						"stubs",
+						str($model)
+							->plural()
+							->headline()
+							->lower(),
+						$model_specific_path
+					);
 
-				$this->replaceInFile(
-					"stub",
-					str($model)->snake(),
-					$model_specific_path
-				);
+					$this->replaceInFile(
+						"stub",
+						str($model)
+							->headline()
+							->lower(),
+						$model_specific_path
+					);
+				} else {
+					$this->replaceInFile(
+						"stubs",
+						str($model)
+							->plural()
+							->snake(),
+						$model_specific_path
+					);
+
+					$this->replaceInFile(
+						"stub",
+						str($model)->snake(),
+						$model_specific_path
+					);
+				}
 			}
 
 			$this->components->info("Scaffolding complete.");
