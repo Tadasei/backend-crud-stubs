@@ -21,8 +21,10 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 
 	// ...
 
-	public function __construct(Closure $dataTypesResolutionCallback = null)
-	{
+	public function __construct(
+		protected array $validMorphTypes,
+		Closure $dataTypesResolutionCallback = null
+	) {
 		$this->dataTypesResolutionCallback =
 			$dataTypesResolutionCallback ??
 			function (string $matchMode) {
@@ -43,9 +45,14 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 						"string",
 					],
 					"gt", "gte", "lt", "lte" => ["integer", "double"],
-					"between", "in", "notIn", "inMany", "notInMany" => [
-						"array",
-					],
+					"between",
+					"in",
+					"notIn",
+					"inMany",
+					"notInMany",
+					"inMorphMany",
+					"notInMorphMany"
+						=> ["array"],
 					default => null,
 				};
 			};
@@ -116,6 +123,24 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 							}
 							break;
 
+						case "inMorphMany":
+						case "notInMorphMany":
+							if (
+								Arr::first(
+									$value,
+									fn($item) => !$this->isAValidMorphValue(
+										$item
+									)
+								)
+							) {
+								$fail(
+									__(
+										"Filter value items for match mode '$matchMode' must be arrays with valid id and morphType keys"
+									)
+								);
+							}
+							break;
+
 						case "between":
 							if (count($value) === 1 || count($value) > 2) {
 								$fail(
@@ -146,5 +171,16 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 				}
 			}
 		}
+	}
+
+	private function isAValidMorphValue($value): bool
+	{
+		return is_array($value) &&
+			collect(array_keys($value))
+				->sort()
+				->values()
+				->all() === ["id", "morphType"] &&
+			in_array($value["morphType"], $this->validMorphTypes) &&
+			is_scalar($value["id"]);
 	}
 }

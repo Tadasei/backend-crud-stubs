@@ -59,6 +59,48 @@ trait LazyLoad
 						$operator
 					);
 				}),
+				"inMorphMany" => $query->whereHasMorph(
+					$fieldName,
+					collect($value)
+						->pluck("morphType")
+						->all(),
+					function (Builder $nestedQuery, string $type) use (
+						$value,
+						$operator
+					) {
+						$nestedQuery = $this->getFilterQueryClause(
+							$nestedQuery,
+							"id",
+							"in",
+							collect($value)
+								->where("morphType", $type)
+								->pluck("id")
+								->all(),
+							$operator
+						);
+					}
+				),
+				"notInMorphMany" => $query->whereDoesntHaveMorph(
+					$fieldName,
+					collect($value)
+						->pluck("morphType")
+						->all(),
+					function (Builder $nestedQuery, string $type) use (
+						$value,
+						$operator
+					) {
+						$nestedQuery = $this->getFilterQueryClause(
+							$nestedQuery,
+							"id",
+							"in",
+							collect($value)
+								->where("morphType", $type)
+								->pluck("id")
+								->all(),
+							$operator
+						);
+					}
+				),
 				"dateAfter", "dateBefore", "dateIs", "dateIsNot" => match (
 				$matchMode
 				) {
@@ -124,6 +166,48 @@ trait LazyLoad
 						$operator
 					);
 				}),
+				"inMorphMany" => $query->orWhereHasMorph(
+					$fieldName,
+					collect($value)
+						->pluck("morphType")
+						->all(),
+					function (Builder $nestedQuery, string $type) use (
+						$value,
+						$operator
+					) {
+						$nestedQuery = $this->getFilterQueryClause(
+							$nestedQuery,
+							"id",
+							"in",
+							collect($value)
+								->where("morphType", $type)
+								->pluck("id")
+								->all(),
+							$operator
+						);
+					}
+				),
+				"notInMorphMany" => $query->orWhereDoesntHaveMorph(
+					$fieldName,
+					collect($value)
+						->pluck("morphType")
+						->all(),
+					function (Builder $nestedQuery, string $type) use (
+						$value,
+						$operator
+					) {
+						$nestedQuery = $this->getFilterQueryClause(
+							$nestedQuery,
+							"id",
+							"in",
+							collect($value)
+								->where("morphType", $type)
+								->pluck("id")
+								->all(),
+							$operator
+						);
+					}
+				),
 				"dateAfter", "dateBefore", "dateIs", "dateIsNot" => match (
 				$matchMode
 				) {

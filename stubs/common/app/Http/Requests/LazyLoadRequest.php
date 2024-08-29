@@ -87,7 +87,7 @@ class LazyLoadRequest extends FormRequest
 			],
 			"filters.*.value" => [
 				"required_with:filters.*.matchMode",
-				new ValidFilterValue(),
+				new ValidFilterValue($this->getValidMorphTypes()),
 			],
 			"filters.*.matchMode" => [
 				"required_with:filters.*.value",
@@ -104,7 +104,7 @@ class LazyLoadRequest extends FormRequest
 			"filters.*.constraints.*" => ["array:value,matchMode"],
 			"filters.*.constraints.*.value" => [
 				"required",
-				new ValidFilterValue(),
+				new ValidFilterValue($this->getValidMorphTypes()),
 			],
 			"filters.*.constraints.*.matchMode" => [
 				"required_with:filters.*.constraints.*.value",
@@ -133,7 +133,7 @@ class LazyLoadRequest extends FormRequest
 		];
 	}
 
-	private function getValidMatchModes(): array
+	protected function getValidMatchModes(): array
 	{
 		return [
 			"startsWith",
@@ -151,10 +151,17 @@ class LazyLoadRequest extends FormRequest
 			"notIn",
 			"inMany",
 			"notInMany",
+			"inMorphMany",
+			"notInMorphMany",
 			"dateAfter",
 			"dateBefore",
 			"dateIs",
 			"dateIsNot",
 		];
+	}
+
+	protected function getValidMorphTypes(): array
+	{
+		return [];
 	}
 }
