@@ -154,12 +154,13 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 							if (
 								Arr::first(
 									$value,
-									fn($item) => !is_numeric($item)
+									fn($item) => !is_scalar($item) ||
+										is_bool($item)
 								)
 							) {
 								$fail(
 									__(
-										"Filter value items for match mode '$matchMode' must be numeric only"
+										"Filter value items for match mode '$matchMode' must be numeric or string only"
 									)
 								);
 								break;
