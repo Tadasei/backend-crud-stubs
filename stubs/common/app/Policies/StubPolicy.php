@@ -15,6 +15,14 @@ class StubPolicy
 	}
 
 	/**
+	 * Determine whether the user can lazyily view any models.
+	 */
+	public function lazyViewAny(User $user): bool
+	{
+		return $this->viewAny($user);
+	}
+
+	/**
 	 * Determine whether the user can create models.
 	 */
 	public function create(User $user): bool

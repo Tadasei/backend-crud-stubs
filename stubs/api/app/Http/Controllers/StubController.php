@@ -21,7 +21,7 @@ class StubController extends Controller
 
 	public function lazy(LazyLoadRequest $request): JsonResponse
 	{
-		Gate::authorize("viewAny", Stub::class);
+		Gate::authorize("lazyViewAny", Stub::class);
 
 		return response()->json([
 			"stubs" => $this->getLazyLoadedData($request, Stub::query()),
