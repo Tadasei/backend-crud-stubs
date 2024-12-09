@@ -157,6 +157,10 @@ class LazyLoadRequest extends FormRequest
 			"dateBefore",
 			"dateIs",
 			"dateIsNot",
+			"dateTimeAfter",
+			"dateTimeBefore",
+			"dateTimeIs",
+			"dateTimeIsNot",
 		];
 	}
 

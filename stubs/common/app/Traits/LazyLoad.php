@@ -104,26 +104,50 @@ trait LazyLoad
 				"dateAfter", "dateBefore", "dateIs", "dateIsNot" => match (
 				$matchMode
 				) {
-					"dateAfter" => $query->whereDate(
+					"dateAfter" => $query->where(
 						$fieldName,
-						">",
-						Carbon::parse($value)->toDateString()
+						">=",
+						Carbon::parse($value)
+							->addDays(1)
+							->toIso8601ZuluString()
 					),
-					"dateBefore" => $query->whereDate(
-						$fieldName,
-						"<",
-						Carbon::parse($value)->toDateString()
+					"dateBefore" => $query->where($fieldName, "<", $value),
+					"dateIs" => $query->where(
+						fn(Builder $dateQuery) => $dateQuery
+							->where($fieldName, ">=", $value)
+							->where(
+								$fieldName,
+								"<",
+								Carbon::parse($value)
+									->addDays(1)
+									->toIso8601ZuluString()
+							)
 					),
-					"dateIs" => $query->whereDate(
-						$fieldName,
-						"=",
-						Carbon::parse($value)->toDateString()
+					"dateIsNot" => $query->where(
+						fn(Builder $dateQuery) => $this->getFilterQueryClause(
+							$this->getFilterQueryClause(
+								$dateQuery,
+								$fieldName,
+								"dateBefore",
+								$value,
+								"and"
+							),
+							$fieldName,
+							"dateAfter",
+							$value,
+							"or"
+						)
 					),
-					"dateIsNot" => $query->whereDate(
-						$fieldName,
-						"!=",
-						Carbon::parse($value)->toDateString()
-					),
+				},
+				"dateTimeAfter",
+				"dateTimeBefore",
+				"dateTimeIs",
+				"dateTimeIsNot"
+					=> match ($matchMode) {
+					"dateTimeAfter" => $query->where($fieldName, ">", $value),
+					"dateTimeBefore" => $query->where($fieldName, "<", $value),
+					"dateTimeIs" => $query->where($fieldName, "=", $value),
+					"dateTimeIsNot" => $query->where($fieldName, "!=", $value),
 				},
 			},
 			"or" => match ($matchMode) {
@@ -211,25 +235,57 @@ trait LazyLoad
 				"dateAfter", "dateBefore", "dateIs", "dateIsNot" => match (
 				$matchMode
 				) {
-					"dateAfter" => $query->orWhereDate(
+					"dateAfter" => $query->orWhere(
 						$fieldName,
-						">",
-						Carbon::parse($value)->toDateString()
+						">=",
+						Carbon::parse($value)
+							->addDays(1)
+							->toIso8601ZuluString()
 					),
-					"dateBefore" => $query->orWhereDate(
+					"dateBefore" => $query->orWhere($fieldName, "<", $value),
+					"dateIs" => $query->orWhere(
+						fn(Builder $dateQuery) => $dateQuery
+							->where($fieldName, ">=", $value)
+							->where(
+								$fieldName,
+								"<",
+								Carbon::parse($value)
+									->addDays(1)
+									->toIso8601ZuluString()
+							)
+					),
+					"dateIsNot" => $query->orWhere(
+						fn(Builder $dateQuery) => $this->getFilterQueryClause(
+							$this->getFilterQueryClause(
+								$dateQuery,
+								$fieldName,
+								"dateBefore",
+								$value,
+								"and"
+							),
+							$fieldName,
+							"dateAfter",
+							$value,
+							"or"
+						)
+					),
+				},
+				"dateTimeAfter",
+				"dateTimeBefore",
+				"dateTimeIs",
+				"dateTimeIsNot"
+					=> match ($matchMode) {
+					"dateTimeAfter" => $query->orWhere($fieldName, ">", $value),
+					"dateTimeBefore" => $query->orWhere(
 						$fieldName,
 						"<",
-						Carbon::parse($value)->toDateString()
+						$value
 					),
-					"dateIs" => $query->orWhereDate(
-						$fieldName,
-						"=",
-						Carbon::parse($value)->toDateString()
-					),
-					"dateIsNot" => $query->orWhereDate(
+					"dateTimeIs" => $query->orWhere($fieldName, "=", $value),
+					"dateTimeIsNot" => $query->orWhere(
 						$fieldName,
 						"!=",
-						Carbon::parse($value)->toDateString()
+						$value
 					),
 				},
 			},

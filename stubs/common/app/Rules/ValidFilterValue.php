@@ -3,10 +3,11 @@
 namespace App\Rules;
 
 use Closure;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use Throwable;
 
 use Illuminate\Contracts\Validation\{DataAwareRule, ValidationRule};
+use Illuminate\Support\{Arr, Carbon};
 
 class ValidFilterValue implements ValidationRule, DataAwareRule
 {
@@ -23,7 +24,7 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 
 	public function __construct(
 		protected array $validMorphTypes,
-		Closure $dataTypesResolutionCallback = null
+		?Closure $dataTypesResolutionCallback = null
 	) {
 		$this->dataTypesResolutionCallback =
 			$dataTypesResolutionCallback ??
@@ -36,7 +37,11 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 					"dateAfter",
 					"dateBefore",
 					"dateIs",
-					"dateIsNot"
+					"dateIsNot",
+					"dateTimeAfter",
+					"dateTimeBefore",
+					"dateTimeIs",
+					"dateTimeIsNot"
 						=> ["string"],
 					"equals", "notEquals" => [
 						"integer",
@@ -105,6 +110,26 @@ class ValidFilterValue implements ValidationRule, DataAwareRule
 					$fail(__("Invalid filter value data type"));
 				} else {
 					switch ($matchMode) {
+						case "dateAfter":
+						case "dateBefore":
+						case "dateIs":
+						case "dateIsNot":
+						case "dateTimeAfter":
+						case "dateTimeBefore":
+						case "dateTimeIs":
+						case "dateTimeIsNot":
+							try {
+								Carbon::parse($value);
+							} catch (Throwable $th) {
+								$fail(
+									__(
+										"Filter value for match mode '$matchMode' must be a valid date string"
+									)
+								);
+							}
+
+							break;
+
 						case "in":
 						case "notIn":
 						case "inMany":
