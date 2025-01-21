@@ -1,10 +1,10 @@
 <?php
 
-namespace Tadasei\LaravelCrudStubs;
+namespace Tadasei\BackendCrudStubs;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Tadasei\LaravelCrudStubs\Console\InstallCommand;
+use Tadasei\BackendCrudStubs\Console\InstallCommand;
 
 class ServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {

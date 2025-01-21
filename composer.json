@@ -1,5 +1,5 @@
 {
-    "name": "tadasei/laravel-crud-stubs",
+    "name": "tadasei/backend-crud-stubs",
     "description": "A package that provides stubs for crud backend using inertia, blade and api stacks",
 	"keywords": ["laravel", "crud", "stubs", "backend"],
     "type": "library",
@@ -24,7 +24,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Tadasei\\LaravelCrudStubs\\": "src/"
+            "Tadasei\\BackendCrudStubs\\": "src/"
         }
     },
 	"config": {
@@ -33,7 +33,7 @@
 	"extra": {
 		"laravel": {
 			"providers": [
-				"Tadasei\\LaravelCrudStubs\\ServiceProvider"
+				"Tadasei\\BackendCrudStubs\\ServiceProvider"
 			]
 		}
 	}
