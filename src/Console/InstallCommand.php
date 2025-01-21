@@ -1,6 +1,6 @@
 <?php
 
-namespace Tadasei\BackendCrudStubs\Console;
+namespace Tadasei\LaravelCrudStubs\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
