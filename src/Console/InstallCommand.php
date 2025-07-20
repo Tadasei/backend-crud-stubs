@@ -67,6 +67,9 @@ class InstallCommand extends Command
 				"routes" => base_path(
 					"routes/resources/" . str($model)->snake() . ".php"
 				),
+				"tests" => base_path(
+					"tests/Feature/Http/Controllers/{$model}ControllerTest.php"
+				),
 			];
 
 			// Ensuring required directories exist
@@ -76,14 +79,16 @@ class InstallCommand extends Command
 					// CRUD specific directories
 
 					base_path("routes/resources"),
+					base_path("tests/Feature/Http/Controllers"),
 					app_path("Http/Controllers"),
 					app_path("Http/Requests/$model"),
 					app_path("Policies"),
 
-					// Lazy loading specific directories
+					// Utilities specific directories
 
 					app_path("Traits"),
 					app_path("Rules"),
+					base_path("tests/Traits"),
 				]
 				as $target_directory
 			) {
@@ -143,6 +148,17 @@ class InstallCommand extends Command
 						"Rules/ValidFilterValue.php"
 					),
 
+					// Tests
+
+					__DIR__ .
+					"/../../stubs/common/tests/Traits/HandlesUsers.php" => base_path(
+						"tests/Traits/HandlesUsers.php"
+					),
+					__DIR__ .
+					"/../../stubs/common/tests/TestCase.php" => base_path(
+						"tests/TestCase.php"
+					),
+
 					// Stack specific files
 
 					// Controllers
@@ -157,6 +173,13 @@ class InstallCommand extends Command
 					__DIR__ .
 					"/../../stubs/$stack/routes/stub.php" => $model_specific_paths[
 						"routes"
+					],
+
+					// Tests
+
+					__DIR__ .
+					"/../../stubs/$stack/tests/Feature/Http/Controllers/StubControllerTest.php" => $model_specific_paths[
+						"tests"
 					],
 				]
 				as $sourcePath => $targetPath
