@@ -273,7 +273,7 @@ class InstallCommand extends Command
 			$this->components->info("Scaffolding complete.");
 		}
 
-		return 1;
+		return 0;
 	}
 
 	/**
