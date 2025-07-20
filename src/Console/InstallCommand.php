@@ -234,6 +234,17 @@ class InstallCommand extends Command
 					$model_specific_path
 				);
 
+				if ($model_specific_path === $model_specific_paths["tests"]) {
+					$this->replaceInFile(
+						'stubs"]',
+						str($model)
+							->plural()
+							->headline()
+							->lower() . '"]',
+						$model_specific_path
+					);
+				}
+
 				if (
 					$model_specific_path === $model_specific_paths["policies"]
 				) {
