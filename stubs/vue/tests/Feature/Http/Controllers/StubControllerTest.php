@@ -4,7 +4,10 @@ namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Stub;
 
-use Tests\{Traits\HandlesUsers, TestCase};
+use Tests\{
+	Traits\HandlesUsers,
+	TestCase
+};
 
 class StubControllerTest extends TestCase
 {
@@ -207,6 +210,8 @@ class StubControllerTest extends TestCase
 		);
 
 		$response->assertRedirect();
+
+		$this->assertDatabaseHas(Stub::class, $stub->only(["name"]));
 	}
 
 	/**
@@ -246,6 +251,8 @@ class StubControllerTest extends TestCase
 		);
 
 		$response->assertRedirect();
+
+		$this->assertDatabaseHas(Stub::class, $updatedStub->only(["name"]));
 	}
 
 	/**
@@ -262,5 +269,7 @@ class StubControllerTest extends TestCase
 		]);
 
 		$response->assertRedirect();
+
+		$this->assertModelMissing($stub);
 	}
 }

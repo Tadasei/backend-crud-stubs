@@ -4,7 +4,10 @@ namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Stub;
 
-use Tests\{Traits\HandlesUsers, TestCase};
+use Tests\{
+	Traits\HandlesUsers,
+	TestCase
+};
 
 class StubControllerTest extends TestCase
 {
@@ -39,7 +42,7 @@ class StubControllerTest extends TestCase
 			route("stubs.update", ["stub" => $stub->id]),
 			[
 				"name" => null,
-			],
+			]
 		);
 
 		$response->assertUnprocessable();
@@ -105,7 +108,7 @@ class StubControllerTest extends TestCase
 
 		$response = $this->actingAs($user)->postJson(
 			route("stubs.store"),
-			$stub->only(["name"]),
+			$stub->only(["name"])
 		);
 
 		$response->assertForbidden();
@@ -123,7 +126,7 @@ class StubControllerTest extends TestCase
 		$response = $this->actingAs($user)->getJson(
 			route("stubs.show", [
 				"stub" => $stub->id,
-			]),
+			])
 		);
 
 		$response->assertForbidden();
@@ -144,7 +147,7 @@ class StubControllerTest extends TestCase
 			route("stubs.update", [
 				"stub" => $stub->id,
 			]),
-			$updatedStub->only(["name"]),
+			$updatedStub->only(["name"])
 		);
 
 		$response->assertForbidden();
@@ -203,10 +206,15 @@ class StubControllerTest extends TestCase
 
 		$response = $this->actingAs($user)->postJson(
 			route("stubs.store"),
-			$stub->only(["name"]),
+			$stub->only(["name"])
 		);
 
 		$response->assertCreated();
+
+		$this->assertDatabaseHas(Stub::class, [
+			...$stub->only(["name"]),
+			"id" => $response["id"],
+		]);
 	}
 
 	/**
@@ -221,7 +229,7 @@ class StubControllerTest extends TestCase
 		$response = $this->actingAs($user)->getJson(
 			route("stubs.show", [
 				"stub" => $stub->id,
-			]),
+			])
 		);
 
 		$response->assertOk();
@@ -242,10 +250,15 @@ class StubControllerTest extends TestCase
 			route("stubs.update", [
 				"stub" => $stub->id,
 			]),
-			$updatedStub->only(["name"]),
+			$updatedStub->only(["name"])
 		);
 
 		$response->assertNoContent();
+
+		$this->assertDatabaseHas(Stub::class, [
+			...$updatedStub->only(["name"]),
+			"id" => $stub->id,
+		]);
 	}
 
 	/**
@@ -262,5 +275,7 @@ class StubControllerTest extends TestCase
 		]);
 
 		$response->assertNoContent();
+
+		$this->assertModelMissing($stub);
 	}
 }
