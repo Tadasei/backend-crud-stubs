@@ -2,6 +2,7 @@
 
 namespace Tadasei\BackendCrudStubs\Console;
 
+use Closure;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -9,7 +10,10 @@ use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Symfony\Component\Process\{PhpExecutableFinder, Process};
+use Symfony\Component\Process\{
+	PhpExecutableFinder,
+	Process
+};
 
 class InstallCommand extends Command
 {
@@ -45,160 +49,38 @@ class InstallCommand extends Command
 		} else {
 			// Install the stack
 
-			// Setting up model specific paths to be replaced with model name
+			$modelSpecificPaths = collect([]);
 
-			$model_specific_paths = [
-				"delete_request" => app_path(
-					"Http/Requests/$model/Delete{$model}Request.php"
-				),
-				"base_request" => app_path(
-					"Http/Requests/$model/{$model}Request.php"
-				),
-				"store_request" => app_path(
-					"Http/Requests/$model/Store{$model}Request.php"
-				),
-				"update_request" => app_path(
-					"Http/Requests/$model/Update{$model}Request.php"
-				),
-				"policies" => app_path("Policies/{$model}Policy.php"),
-				"controllers" => app_path(
-					"Http/Controllers/{$model}Controller.php"
-				),
-				"routes" => base_path(
-					"routes/resources/" . str($model)->snake() . ".php"
-				),
-				"tests" => base_path(
-					"tests/Feature/Http/Controllers/{$model}ControllerTest.php"
-				),
-			];
+			collect([
+				// Common stubs
+				__DIR__ . "/../../stubs/common",
 
-			// Ensuring required directories exist
+				// Stack specific stubs
+				__DIR__ . "/../../stubs/$stack",
+			])->each(
+				fn(string $directory) => $this->publishDirectory(
+					$directory,
+					function (string $path) use ($model, $modelSpecificPaths) {
+						$targetPath = $this->getModelSpecificTargetFilePath(
+							$model,
+							$path
+						);
 
-			foreach (
-				[
-					// CRUD specific directories
+						if ($this->isModelSpecificPath($path)) {
+							$modelSpecificPaths->push($targetPath);
+						}
 
-					base_path("routes/resources"),
-					base_path("tests/Feature/Http/Controllers"),
-					app_path("Http/Controllers"),
-					app_path("Http/Requests/$model"),
-					app_path("Policies"),
+						return $targetPath;
+					}
+				)
+			);
 
-					// Utilities specific directories
+			// Update model specific stubs content with model name
 
-					app_path("Traits"),
-					app_path("Rules"),
-					base_path("tests/Traits"),
-				]
-				as $target_directory
-			) {
-				if (!file_exists($target_directory)) {
-					mkdir($target_directory, recursive: true);
-				}
-			}
+			$modelSpecificPaths->each(function (string $path) use ($model) {
+				$this->replaceInFile("Stubs", str($model)->plural(), $path);
 
-			// Copying files
-
-			foreach (
-				[
-					// Common files
-
-					// Requests
-
-					__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/DeleteStubRequest.php" => $model_specific_paths[
-						"delete_request"
-					],
-					__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/StubRequest.php" => $model_specific_paths[
-						"base_request"
-					],
-					__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/StoreStubRequest.php" => $model_specific_paths[
-						"store_request"
-					],
-					__DIR__ .
-					"/../../stubs/common/app/Http/Requests/Stub/UpdateStubRequest.php" => $model_specific_paths[
-						"update_request"
-					],
-
-					// Policies
-
-					__DIR__ .
-					"/../../stubs/common/app/Policies/StubPolicy.php" => $model_specific_paths[
-						"policies"
-					],
-
-					// Lazy loading
-
-					__DIR__ .
-					"/../../stubs/common/app/Http/Requests/LazyLoadRequest.php" => app_path(
-						"Http/Requests/LazyLoadRequest.php"
-					),
-					__DIR__ .
-					"/../../stubs/common/app/Traits/LazyLoad.php" => app_path(
-						"Traits/LazyLoad.php"
-					),
-					__DIR__ .
-					"/../../stubs/common/app/Rules/PresentWithout.php" => app_path(
-						"Rules/PresentWithout.php"
-					),
-					__DIR__ .
-					"/../../stubs/common/app/Rules/ValidFilterValue.php" => app_path(
-						"Rules/ValidFilterValue.php"
-					),
-
-					// Tests
-
-					__DIR__ .
-					"/../../stubs/common/tests/Traits/HandlesUsers.php" => base_path(
-						"tests/Traits/HandlesUsers.php"
-					),
-					__DIR__ .
-					"/../../stubs/common/tests/TestCase.php" => base_path(
-						"tests/TestCase.php"
-					),
-
-					// Stack specific files
-
-					// Controllers
-
-					__DIR__ .
-					"/../../stubs/$stack/app/Http/Controllers/StubController.php" => $model_specific_paths[
-						"controllers"
-					],
-
-					// Routes
-
-					__DIR__ .
-					"/../../stubs/$stack/routes/stub.php" => $model_specific_paths[
-						"routes"
-					],
-
-					// Tests
-
-					__DIR__ .
-					"/../../stubs/$stack/tests/Feature/Http/Controllers/StubControllerTest.php" => $model_specific_paths[
-						"tests"
-					],
-				]
-				as $sourcePath => $targetPath
-			) {
-				if (!file_exists($targetPath)) {
-					copy($sourcePath, $targetPath);
-				}
-			}
-
-			// Updating model specific files content with model name
-
-			foreach ($model_specific_paths as $model_specific_path) {
-				$this->replaceInFile(
-					"Stubs",
-					str($model)->plural(),
-					$model_specific_path
-				);
-
-				$this->replaceInFile("Stub", $model, $model_specific_path);
+				$this->replaceInFile("Stub", $model, $path);
 
 				$this->replaceInFile(
 					'$stubs',
@@ -206,7 +88,7 @@ class InstallCommand extends Command
 						->plural()
 						->snake()
 						->prepend('$'),
-					$model_specific_path
+					$path
 				);
 
 				$this->replaceInFile(
@@ -214,7 +96,7 @@ class InstallCommand extends Command
 					str($model)
 						->snake()
 						->prepend('$'),
-					$model_specific_path
+					$path
 				);
 
 				$this->replaceInFile(
@@ -223,7 +105,7 @@ class InstallCommand extends Command
 						->plural()
 						->snake()
 						->prepend("->"),
-					$model_specific_path
+					$path
 				);
 
 				$this->replaceInFile(
@@ -231,30 +113,28 @@ class InstallCommand extends Command
 					str($model)
 						->snake()
 						->prepend("->"),
-					$model_specific_path
+					$path
 				);
 
-				if ($model_specific_path === $model_specific_paths["tests"]) {
+				if ($this->isControllerTestPath($path)) {
 					$this->replaceInFile(
 						'stubs"]',
 						str($model)
 							->plural()
 							->headline()
 							->lower() . '"]',
-						$model_specific_path
+						$path
 					);
 				}
 
-				if (
-					$model_specific_path === $model_specific_paths["policies"]
-				) {
+				if ($this->isPolicyPath($path)) {
 					$this->replaceInFile(
 						"stubs",
 						str($model)
 							->plural()
 							->headline()
 							->lower(),
-						$model_specific_path
+						$path
 					);
 
 					$this->replaceInFile(
@@ -262,7 +142,7 @@ class InstallCommand extends Command
 						str($model)
 							->headline()
 							->lower(),
-						$model_specific_path
+						$path
 					);
 				} else {
 					$this->replaceInFile(
@@ -270,16 +150,14 @@ class InstallCommand extends Command
 						str($model)
 							->plural()
 							->snake(),
-						$model_specific_path
+						$path
 					);
 
-					$this->replaceInFile(
-						"stub",
-						str($model)->snake(),
-						$model_specific_path
-					);
+					$this->replaceInFile("stub", str($model)->snake(), $path);
 				}
-			}
+			});
+
+			// Notify of completion
 
 			$this->components->info("Scaffolding complete.");
 		}
@@ -304,6 +182,152 @@ class InstallCommand extends Command
 			"resource",
 			$this->components->ask("Please input the CRUD resource name to use")
 		);
+	}
+
+	protected function getModelSpecificTargetFilePath(
+		string $model,
+		string $path
+	): string {
+		return str_replace(
+			["Stub", "stub"],
+			[
+				$model,
+				str($model)
+					->snake()
+					->value(),
+			],
+			$path
+		);
+	}
+
+	protected function isPolicyPath(string $path): bool
+	{
+		return str_ends_with($path, "Policy.php");
+	}
+
+	protected function isControllerTestPath(string $path): bool
+	{
+		return str_ends_with($path, "Test.php");
+	}
+
+	protected function isModelSpecificPath(string $path): bool
+	{
+		return str_contains($path, "Stub") || str_contains($path, "stub");
+	}
+
+	protected function publishDirectory(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): void {
+		$files = $this->listDirectoryFiles(
+			$directory,
+			$getTargetFilePath,
+			$prefix
+		);
+
+		// Ensuring target directories exist
+
+		$this->ensureTargetDirectoriesExist($files);
+
+		// Copying files
+
+		$this->copyFiles($files);
+	}
+
+	protected function copyFiles(array $files): void
+	{
+		collect($files)->each(function (array $file) {
+			if (!file_exists($file["target"])) {
+				copy($file["source"], $file["target"]);
+			}
+		});
+	}
+
+	protected function ensureTargetDirectoriesExist(array $files): void
+	{
+		collect($files)
+			->map(
+				fn(array $file) => str_replace(
+					"/{$file["name"]}",
+					"",
+					$file["target"]
+				)
+			)
+			->unique()
+			->each(function (string $targetDirectory) {
+				if (!file_exists($targetDirectory)) {
+					mkdir($targetDirectory, recursive: true);
+				}
+			});
+	}
+
+	protected function listDirectoryFiles(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): array {
+		$directoryMap = $this->getDirectoryMap(
+			$directory,
+			$getTargetFilePath,
+			$prefix
+		);
+
+		return $this->getDirectoryMapFiles($directoryMap);
+	}
+
+	protected function getDirectoryMapFiles(array $directoryMap): array
+	{
+		return collect($directoryMap)
+			->flatMap(
+				fn(array $item) => key_exists("map", $item)
+					? $this->getDirectoryMapFiles($item["map"])
+					: [$item]
+			)
+			->all();
+	}
+
+	protected function getDirectoryMap(
+		string $directory,
+		?Closure $getTargetFilePath = null,
+		?string $prefix = null
+	): array {
+		$prefix ??= "$directory/";
+
+		$getTargetFilePath ??= fn(string $path): string => $path;
+
+		return collect(scandir($directory))
+			->reject(fn(string $name) => in_array($name, [".", ".."]))
+			->values()
+			->map(function (string $name) use (
+				$directory,
+				$getTargetFilePath,
+				$prefix
+			) {
+				$source = "$directory/$name";
+
+				return [
+					"name" => $name,
+					"source" => $source,
+					...is_dir($source)
+						? [
+							"map" => $this->getDirectoryMap(
+								$source,
+								$getTargetFilePath,
+								$prefix
+							),
+						]
+						: [
+							"target" => $getTargetFilePath(
+								base_path(
+									str_replace($prefix, "", $directory) .
+										"/$name"
+								)
+							),
+						],
+				];
+			})
+			->all();
 	}
 
 	/**
