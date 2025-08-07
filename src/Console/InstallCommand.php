@@ -61,14 +61,19 @@ class InstallCommand extends Command
 				fn(string $directory) => $this->publishDirectory(
 					$directory,
 					function (string $path) use ($model, $modelSpecificPaths) {
+						if (
+							is_dir($path) ||
+							!$this->isModelSpecificPath($path)
+						) {
+							return $path;
+						}
+
 						$targetPath = $this->getModelSpecificTargetFilePath(
 							$model,
 							$path
 						);
 
-						if ($this->isModelSpecificPath($path)) {
-							$modelSpecificPaths->push($targetPath);
-						}
+						$modelSpecificPaths->push($targetPath);
 
 						return $targetPath;
 					}
