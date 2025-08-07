@@ -17,6 +17,7 @@ class DeleteStubRequest extends FormRequest
 	{
 		return [
 			"stubs" => ["required", "array"],
+
 			"stubs.*" => [
 				"distinct:strict",
 				"numeric",
