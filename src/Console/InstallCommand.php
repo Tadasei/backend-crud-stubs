@@ -258,11 +258,15 @@ class InstallCommand extends Command
 				)
 			)
 			->unique()
-			->each(function (string $targetDirectory) {
-				if (!file_exists($targetDirectory)) {
-					mkdir($targetDirectory, recursive: true);
-				}
-			});
+			->filter(
+				fn(string $targetDirectory) => !file_exists($targetDirectory)
+			)
+			->each(
+				fn(string $targetDirectory) => mkdir(
+					$targetDirectory,
+					recursive: true
+				)
+			);
 	}
 
 	protected function listDirectoryFiles(
