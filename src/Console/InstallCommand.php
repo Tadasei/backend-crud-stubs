@@ -2,7 +2,6 @@
 
 namespace Tadasei\BackendCrudStubs\Console;
 
-use Closure;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -49,118 +48,107 @@ class InstallCommand extends Command
 		} else {
 			// Install the stack
 
-			$modelSpecificPaths = collect([]);
-
-			collect([
+			$publishedFiles = collect([
 				// Common stubs
 				__DIR__ . "/../../stubs/common",
 
 				// Stack specific stubs
 				__DIR__ . "/../../stubs/$stack",
-			])->each(
-				fn(string $directory) => $this->publishDirectory(
-					$directory,
-					function (string $path) use ($model, $modelSpecificPaths) {
-						if (
-							is_dir($path) ||
-							!$this->isModelSpecificPath($path)
-						) {
-							return $path;
-						}
-
-						$targetPath = $this->getModelSpecificTargetFilePath(
-							$model,
-							$path
-						);
-
-						$modelSpecificPaths->push($targetPath);
-
-						return $targetPath;
-					}
-				)
+			])->flatMap(
+				fn(string $directory) => $this->publishDirectory($directory)
 			);
 
 			// Update model specific stubs content with model name
 
-			$modelSpecificPaths->each(function (string $path) use ($model) {
-				$this->replaceInFile("Stubs", str($model)->plural(), $path);
-
-				$this->replaceInFile("Stub", $model, $path);
-
-				$this->replaceInFile(
-					'$stubs',
-					str($model)
-						->plural()
-						->snake()
-						->prepend('$'),
-					$path
-				);
-
-				$this->replaceInFile(
-					'$stub',
-					str($model)
-						->snake()
-						->prepend('$'),
-					$path
-				);
-
-				$this->replaceInFile(
-					"->stubs",
-					str($model)
-						->plural()
-						->snake()
-						->prepend("->"),
-					$path
-				);
-
-				$this->replaceInFile(
-					"->stub",
-					str($model)
-						->snake()
-						->prepend("->"),
-					$path
-				);
-
-				if ($this->isControllerTestPath($path)) {
+			$publishedFiles
+				->where("isModelSpecific", true)
+				->each(function (array $file) use ($model) {
 					$this->replaceInFile(
-						'stubs"]',
+						"Stubs",
+						str($model)->plural(),
+						$file["target"]
+					);
+
+					$this->replaceInFile("Stub", $model, $file["target"]);
+
+					$this->replaceInFile(
+						'$stubs',
 						str($model)
 							->plural()
-							->headline()
-							->lower() . '"]',
-						$path
+							->snake()
+							->prepend('$'),
+						$file["target"]
 					);
-				}
 
-				if ($this->isPolicyPath($path)) {
 					$this->replaceInFile(
-						"stubs",
+						'$stub',
+						str($model)
+							->snake()
+							->prepend('$'),
+						$file["target"]
+					);
+
+					$this->replaceInFile(
+						"->stubs",
 						str($model)
 							->plural()
-							->headline()
-							->lower(),
-						$path
+							->snake()
+							->prepend("->"),
+						$file["target"]
 					);
 
 					$this->replaceInFile(
-						"stub",
+						"->stub",
 						str($model)
-							->headline()
-							->lower(),
-						$path
-					);
-				} else {
-					$this->replaceInFile(
-						"stubs",
-						str($model)
-							->plural()
-							->snake(),
-						$path
+							->snake()
+							->prepend("->"),
+						$file["target"]
 					);
 
-					$this->replaceInFile("stub", str($model)->snake(), $path);
-				}
-			});
+					if ($this->isControllerTestFile($file)) {
+						$this->replaceInFile(
+							'stubs"]',
+							str($model)
+								->plural()
+								->headline()
+								->lower() . '"]',
+							$file["target"]
+						);
+					}
+
+					if ($this->isPolicyFile($file)) {
+						$this->replaceInFile(
+							"stubs",
+							str($model)
+								->plural()
+								->headline()
+								->lower(),
+							$file["target"]
+						);
+
+						$this->replaceInFile(
+							"stub",
+							str($model)
+								->headline()
+								->lower(),
+							$file["target"]
+						);
+					} else {
+						$this->replaceInFile(
+							"stubs",
+							str($model)
+								->plural()
+								->snake(),
+							$file["target"]
+						);
+
+						$this->replaceInFile(
+							"stub",
+							str($model)->snake(),
+							$file["target"]
+						);
+					}
+				});
 
 			// Notify of completion
 
@@ -189,10 +177,18 @@ class InstallCommand extends Command
 		);
 	}
 
-	protected function getModelSpecificTargetFilePath(
-		string $model,
-		string $path
-	): string {
+	protected function isPolicyFile(array $file): bool
+	{
+		return str_ends_with($file["name"], "Policy.php");
+	}
+
+	protected function isControllerTestFile(array $file): bool
+	{
+		return str_ends_with($file["name"], "ControllerTest.php");
+	}
+
+	protected function renameStub(string $stub, string $model): string
+	{
 		return str_replace(
 			["Stub", "stub"],
 			[
@@ -201,35 +197,48 @@ class InstallCommand extends Command
 					->snake()
 					->value(),
 			],
-			$path
+			$stub
 		);
 	}
 
-	protected function isPolicyPath(string $path): bool
+	protected function isModelSpecificFile(array $file): bool
 	{
-		return str_ends_with($path, "Policy.php");
+		return str_contains($file["name"], "Stub") ||
+			str_contains($file["name"], "stub");
 	}
 
-	protected function isControllerTestPath(string $path): bool
+	protected function getTargetFile(array $file): array
 	{
-		return str_ends_with($path, "Test.php");
-	}
+		$model = $this->argument("resource");
 
-	protected function isModelSpecificPath(string $path): bool
-	{
-		return str_contains($path, "Stub") || str_contains($path, "stub");
+		["name" => $name, "target" => $target] = $file;
+
+		$isModelSpecific = $this->isModelSpecificFile($file);
+
+		if ($isModelSpecific) {
+			$name = $this->renameStub($name, $model);
+
+			$target = $this->renameStub($target, $model);
+		}
+
+		return [
+			"source" => $file["source"],
+
+			"name" => $name,
+
+			"target" => $target,
+
+			"isModelSpecific" => $isModelSpecific,
+		];
 	}
 
 	protected function publishDirectory(
 		string $directory,
-		?Closure $getTargetFilePath = null,
 		?string $prefix = null
-	): void {
-		$files = $this->listDirectoryFiles(
-			$directory,
-			$getTargetFilePath,
-			$prefix
-		);
+	): array {
+		$files = collect($this->listDirectoryFiles($directory, $prefix))
+			->map(fn(array $file) => $this->getTargetFile($file))
+			->all();
 
 		// Ensuring target directories exist
 
@@ -237,14 +246,17 @@ class InstallCommand extends Command
 
 		// Copying files
 
-		$this->copyFiles($files);
+		$copiedFiles = $this->copyFiles($files);
+
+		return $copiedFiles;
 	}
 
-	protected function copyFiles(array $files): void
+	protected function copyFiles(array $files): array
 	{
-		collect($files)
+		return collect($files)
 			->filter(fn(array $file) => !file_exists($file["target"]))
-			->each(fn(array $file) => copy($file["source"], $file["target"]));
+			->each(fn(array $file) => copy($file["source"], $file["target"]))
+			->all();
 	}
 
 	protected function ensureTargetDirectoriesExist(array $files): void
@@ -271,14 +283,9 @@ class InstallCommand extends Command
 
 	protected function listDirectoryFiles(
 		string $directory,
-		?Closure $getTargetFilePath = null,
 		?string $prefix = null
 	): array {
-		$directoryMap = $this->getDirectoryMap(
-			$directory,
-			$getTargetFilePath,
-			$prefix
-		);
+		$directoryMap = $this->getDirectoryMap($directory, $prefix);
 
 		return $this->getDirectoryMapFiles($directoryMap);
 	}
@@ -296,21 +303,14 @@ class InstallCommand extends Command
 
 	protected function getDirectoryMap(
 		string $directory,
-		?Closure $getTargetFilePath = null,
 		?string $prefix = null
 	): array {
 		$prefix ??= "$directory/";
 
-		$getTargetFilePath ??= fn(string $path): string => $path;
-
 		return collect(scandir($directory))
 			->reject(fn(string $name) => in_array($name, [".", ".."]))
 			->values()
-			->map(function (string $name) use (
-				$directory,
-				$getTargetFilePath,
-				$prefix
-			) {
+			->map(function (string $name) use ($directory, $prefix) {
 				$source = "$directory/$name";
 
 				return [
@@ -318,18 +318,11 @@ class InstallCommand extends Command
 					"source" => $source,
 					...is_dir($source)
 						? [
-							"map" => $this->getDirectoryMap(
-								$source,
-								$getTargetFilePath,
-								$prefix
-							),
+							"map" => $this->getDirectoryMap($source, $prefix),
 						]
 						: [
-							"target" => $getTargetFilePath(
-								base_path(
-									str_replace($prefix, "", $directory) .
-										"/$name"
-								)
+							"target" => base_path(
+								str_replace($prefix, "", $directory) . "/$name"
 							),
 						],
 				];
