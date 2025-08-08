@@ -242,11 +242,9 @@ class InstallCommand extends Command
 
 	protected function copyFiles(array $files): void
 	{
-		collect($files)->each(function (array $file) {
-			if (!file_exists($file["target"])) {
-				copy($file["source"], $file["target"]);
-			}
-		});
+		collect($files)
+			->filter(fn(array $file) => !file_exists($file["target"]))
+			->each(fn(array $file) => copy($file["source"], $file["target"]));
 	}
 
 	protected function ensureTargetDirectoriesExist(array $files): void
